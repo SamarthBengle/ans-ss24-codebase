@@ -1,21 +1,16 @@
 """
  Copyright 2024 Computer Networks Group @ UPB
-
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
-
       https://www.apache.org/licenses/LICENSE-2.0
-
  Unless required by applicable law or agreed to in writing, software
  distributed under the License is distributed on an "AS IS" BASIS,
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  See the License for the specific language governing permissions and
  limitations under the License.
  """
-
-#!/bin/env python3
-
+#!/usr/bin/env python3
 from mininet.topo import Topo
 from mininet.net import Mininet
 from mininet.node import RemoteController, OVSKernelSwitch
@@ -25,28 +20,33 @@ from mininet.log import setLogLevel
 
 
 class NetworkTopo(Topo):
-
     def __init__(self):
-
         Topo.__init__(self)
+        
+        # Add hosts with their IP addresses and default gateways
+        h1 = self.addHost('h1', ip="10.0.1.2/24", defaultRoute="via 10.0.1.1")
+        h2 = self.addHost('h2', ip="10.0.1.3/24", defaultRoute="via 10.0.1.1")
+        ext = self.addHost('ext', ip="192.168.1.123/24", defaultRoute="via 192.168.1.1")
+        ser = self.addHost('ser', ip="10.0.2.2/24", defaultRoute="via 10.0.2.1")
 
-        h1 = self.addHost( 'h1', ip = "10.0.1.2/24", defaultRoute = "via 10.0.1.1" )
-        h2 = self.addHost( 'h2', ip = "10.0.1.3/24", defaultRoute = "via 10.0.1.1" )
-        ext = self.addHost('ext', ip = "192.168.1.123/24", defaultRoute = "via 192.168.1.1")
-        ser = self.addHost('ser', ip = "10.0.2.2/24", defaultRoute = "via 10.0.2.1")
+        # Add switches (s1, s2) and router (s3)
+        s1 = self.addSwitch('s1', dpid='1')  # Internal network switch
+        s2 = self.addSwitch('s2', dpid='2')  # Server network switch
+        router = self.addSwitch('s3', dpid='3')  # Router (implemented as a switch)
 
-        s1 = self.addSwitch( 's1' )
-        s2 = self.addSwitch( 's2' )
-        router = self.addSwitch( 's3' )
+        # Add links with bandwidth and delay parameters
+        # Internal network links
+        self.addLink(s1, h1, bw=15, delay='10ms')
+        self.addLink(s1, h2, bw=15, delay='10ms')
+        
+        # Server network link
+        self.addLink(ser, s2, bw=15, delay='10ms')
+        
+        # Router links WITHOUT IP configuration (will be handled by controller)
+        self.addLink(router, ext, bw=15, delay='10ms')
+        self.addLink(s1, router, bw=15, delay='10ms')
+        self.addLink(s2, router, bw=15, delay='10ms')
 
-        self.addLink( s1, h1, bw = 15, delay = '10ms' )
-        self.addLink( s1, h2, bw = 15, delay = '10ms' )
-
-        self.addLink( ser, s2, bw = 15, delay = '10ms' )
-
-        self.addLink( router, ext, intfName2='s3-ext', params2={ 'ip' : '192.168.1.1/24' })
-        self.addLink( s1, router, intfName2='s3-eth3', params2={ 'ip' : '10.0.1.1/24' } )
-        self.addLink( s2, router, intfName2='s3-eth2', params2={ 'ip' : '10.0.2.1/24' } )
 
 def run():
     topo = NetworkTopo()
@@ -62,6 +62,7 @@ def run():
     net.start()
     CLI(net)
     net.stop()
+
 
 if __name__ == '__main__':
     setLogLevel('info')
