@@ -32,10 +32,10 @@ class NetworkTopo(Topo):
         Topo.__init__(self)
 
         # Add hosts with their IP addresses and default gateways
-        h1 = self.addHost('h1', ip="10.0.1.2/24", mac="00:00:00:00:00:01", defaultRoute="via 10.0.1.1")
-        h2 = self.addHost('h2', ip="10.0.1.3/24", mac="00:00:00:00:00:02", defaultRoute="via 10.0.1.1")
-        ext = self.addHost('ext', ip="192.168.1.123/24", mac="00:00:00:00:00:04", defaultRoute="via 192.168.1.1")
-        ser = self.addHost('ser', ip="10.0.2.2/24", mac="00:00:00:00:00:03", defaultRoute="via 10.0.2.1")
+        h1 = self.addHost( 'h1', ip = "10.0.1.2/24", defaultRoute = "via 10.0.1.1" )
+        h2 = self.addHost( 'h2', ip = "10.0.1.3/24", defaultRoute = "via 10.0.1.1" )
+        ext = self.addHost('ext', ip = "192.168.1.123/24", defaultRoute = "via 192.168.1.1")
+        ser = self.addHost('ser', ip = "10.0.2.2/24", defaultRoute = "via 10.0.2.1")
 
         # Add switches (s1, s2) and router (s3)
         s1 = self.addSwitch('s1', dpid='1')  # Internal network switch
@@ -51,9 +51,9 @@ class NetworkTopo(Topo):
         self.addLink(ser, s2, bw=15, delay='10ms')
         
         # Router links WITH IP configuration (critical for ARP to work properly)
-        self.addLink(router, ext, intfName2='s3-ext', params2={'ip': '192.168.1.1/24'}, bw=15, delay='10ms')
-        self.addLink(s1, router, intfName2='s3-eth3', params2={'ip': '10.0.1.1/24'}, bw=15, delay='10ms')
-        self.addLink(s2, router, intfName2='s3-eth2', params2={'ip': '10.0.2.1/24'}, bw=15, delay='10ms')
+        self.addLink(router, ext, bw=15, delay='10ms')
+        self.addLink(s1, router, bw=15, delay='10ms')
+        self.addLink(s2, router, bw=15, delay='10ms')
 
 
 def run():
